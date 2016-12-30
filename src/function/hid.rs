@@ -1,15 +1,13 @@
-// use std::fmt;
+extern crate std;
+
 use std::collections::HashMap;
-use std::collections::hash_map::Entry;
-
+use std::fs;
 use std::io;
-use std::path::Path;
+use std::path::{Path, PathBuf};
+use std::io::Write;
 
-pub trait UsbGadgetFunction {
-    fn instance_name(&self) -> &str;
-    fn function_type(&self) -> &str;
-    fn attributes(&self) -> HashMap<&str, Vec<u8>>;
-}
+use UsbGadgetFunction;
+use util::write_data;
 
 // HID 1.11 Specification http://www.usb.org/developers/hidpage/HID1_11.pdf
 // HID 1.11 Section 4.1: The HID Class
@@ -28,7 +26,7 @@ pub static HID_KEYBOARD_REPORT_DESC: [u8; 63] = [0x05, 0x01, 0x09, 0x06, 0xA1, 0
                                                  0x95, 0x01, 0x75, 0x03, 0x91, 0x03, 0x95, 0x06,
                                                  0x75, 0x08, 0x15, 0x00, 0x25, 0x65, 0x05, 0x07,
                                                  0x19, 0x00, 0x29, 0x65, 0x81, 0x00, 0xC0];
-
+#[derive(Clone)]
 pub struct HIDFunction<'a> {
     pub instance_name: String,
     pub protocol: u8,
@@ -73,5 +71,24 @@ impl<'a> UsbGadgetFunction for HIDFunction<'a> {
         attrs.insert("report_desc", self.report_desc.to_vec());
 
         return attrs;
+    }
+
+    fn write_to(&self, base_path: &Path) -> io::Result<()> {
+        let fname = format!("{func_type}.{instance}",
+                            func_type = self.function_type(),
+                            instance = self.instance_name());
+        let function_path = base_path.join(fname);
+        try!(fs::create_dir(&function_path));
+        // function attributes
+        try!(write_data(function_path.join("protocol").as_path(),
+                        format!("{}", self.protocol).as_bytes()));
+        try!(write_data(function_path.join("subclass").as_path(),
+                        format!("{}", self.subclass).as_bytes()));
+        try!(write_data(function_path.join("report_length").as_path(),
+                        format!("{}", self.report_length).as_bytes()));
+        try!(write_data(function_path.join("report_desc").as_path(),
+                        self.report_desc));
+
+        return Ok(());
     }
 }

@@ -5,4 +5,5 @@ pub struct UsbGadgetConfig {
     pub name: String,
     pub description: String,
     pub functions: Vec<Box<UsbGadgetFunction>>,
+    pub max_power: Option<u16>,
 }

@@ -2,6 +2,7 @@ mod function;
 mod config;
 mod gadget;
 mod state;
+mod util;
 
 pub use function::*;
 pub use config::*;
