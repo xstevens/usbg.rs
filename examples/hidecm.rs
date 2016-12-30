@@ -1,5 +1,4 @@
 extern crate usbg;
-extern crate rustc_serialize;
 
 use std::path::Path;
 use std::fs;
@@ -22,18 +21,6 @@ fn main() {
                                 "d34db33f0123456789");
     g1.bcd_device = Some(0x0100); // version 1.0.0
     g1.bcd_usb = Some(0x0200); // USB 2.0
-
-    // let mut g1 = UsbGadget {
-    //     name: "g1",
-    //     vendor_id: 0x1d6b,
-    //     product_id: 0x0104,
-    //     lang: usbg::LANGID_EN_US,
-    //     product: "USB Armory",
-    //     manufacturer: "Inverse Path",
-    //     serial_number: "d34db33f0123456789",
-    //     bcd_device: Some(0x0100),
-    //     bcd_usb: Some(0x0200),
-    // };
 
     // add ECM ethernet
     let ecm_function = Box::new(ecm::ECMFunction {

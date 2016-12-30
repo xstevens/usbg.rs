@@ -56,22 +56,22 @@ impl UsbGadgetState {
 
         // vendor and product id
         try!(self.write_data(gadget_path.join("idVendor").as_path(),
-                             format!("{:#x}", gadget.vendor_id).as_bytes())
-                 .map_err(|e| e.to_string()));
+                        format!("{:#x}", gadget.vendor_id).as_bytes())
+            .map_err(|e| e.to_string()));
         try!(self.write_data(gadget_path.join("idProduct").as_path(),
-                             format!("{:#x}", gadget.product_id).as_bytes())
-                 .map_err(|e| e.to_string()));
+                        format!("{:#x}", gadget.product_id).as_bytes())
+            .map_err(|e| e.to_string()));
 
         // bcdDevice and bcdUSB
         if let Some(bcd_device) = gadget.bcd_device {
             try!(self.write_data(gadget_path.join("bcdDevice").as_path(),
-                                 format!("{:#x}", bcd_device).as_bytes())
-                     .map_err(|e| e.to_string()));
+                            format!("{:#x}", bcd_device).as_bytes())
+                .map_err(|e| e.to_string()));
         }
         if let Some(bcd_usb) = gadget.bcd_usb {
             try!(self.write_data(gadget_path.join("bcdUSB").as_path(),
-                                 format!("{:#x}", bcd_usb).as_bytes())
-                     .map_err(|e| e.to_string()));
+                            format!("{:#x}", bcd_usb).as_bytes())
+                .map_err(|e| e.to_string()));
         }
 
         // string attributes
@@ -79,36 +79,32 @@ impl UsbGadgetState {
         let strings_path = gadget_path.join("strings").join(&lang);
         try!(fs::create_dir_all(&strings_path).map_err(|e| e.to_string()));
         try!(self.write_data(strings_path.join("serialnumber").as_path(),
-                             gadget.serial_number.as_bytes())
-                 .map_err(|e| e.to_string()));
+                        gadget.serial_number.as_bytes())
+            .map_err(|e| e.to_string()));
         try!(self.write_data(strings_path.join("manufacturer").as_path(),
-                             gadget.manufacturer.as_bytes())
-                 .map_err(|e| e.to_string()));
+                        gadget.manufacturer.as_bytes())
+            .map_err(|e| e.to_string()));
         try!(self.write_data(strings_path.join("product").as_path(),
-                             gadget.product.as_bytes())
-                 .map_err(|e| e.to_string()));
+                        gadget.product.as_bytes())
+            .map_err(|e| e.to_string()));
 
         // functions
         let functions_path = gadget_path.join("functions");
         try!(fs::create_dir(&functions_path).map_err(|e| e.to_string()));
-        // gadget.functions
-        //        .into_iter()
-        //        .map(|f| f.write_to(functions_path.as_path()));
         for func in &gadget.functions {
             try!(self.write_function(functions_path.as_path(), func).map_err(|e| e.to_string()));
             // try!(func.write_to(functions_path.as_path()).map_err(|e| e.to_string()));
         }
-
 
         // configs
         let configs_path = gadget_path.join("configs");
         try!(fs::create_dir(&configs_path).map_err(|e| e.to_string()));
         for config in &gadget.configs {
             try!(self.write_config(configs_path.as_path(),
-                                   config,
-                                   functions_path.as_path(),
-                                   lang.as_str())
-                     .map_err(|e| e.to_string()));
+                              config,
+                              functions_path.as_path(),
+                              lang.as_str())
+                .map_err(|e| e.to_string()));
         }
 
         // write UDC to enable
