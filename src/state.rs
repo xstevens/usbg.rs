@@ -8,42 +8,41 @@ use UsbGadgetFunction;
 use UsbGadgetConfig;
 
 pub struct UsbGadgetState {
-    pub configfs_path: PathBuf,
-    pub udc_name: String,
+    configfs_path: PathBuf,
+    udc_name: String,
 }
 
 impl UsbGadgetState {
-    pub fn new(configfs_path: Option<String>, udc_name: Option<String>) -> UsbGadgetState {
+    pub fn new() -> UsbGadgetState {
         let mut state = UsbGadgetState {
             configfs_path: PathBuf::from("/sys/kernel/config/usb_gadget"),
             udc_name: String::new(),
         };
 
-        // set different configs_path if one was given
-        if let Some(path) = configfs_path {
-            state.configfs_path = PathBuf::from(&path);
-        }
-
-        // set or retrieve the UDC name
-        match udc_name {
-            Some(name) => state.udc_name.push_str(name.as_str()),
-            None => {
-                let udc_dir = PathBuf::from("/sys/class/udc");
-                if let Ok(entries) = fs::read_dir(&udc_dir) {
-                    for entry in entries {
-                        if let Ok(entry) = entry {
-                            println!("{:?}", entry.file_name());
-                            if let Ok(fname) = entry.file_name().into_string() {
-                                state.udc_name.push_str(fname.as_str());
-                                break;
-                            }
-                        }
+        let udc_dir = PathBuf::from("/sys/class/udc");
+        if let Ok(entries) = fs::read_dir(&udc_dir) {
+            for entry in entries {
+                if let Ok(entry) = entry {
+                    println!("{:?}", entry.file_name());
+                    if let Ok(fname) = entry.file_name().into_string() {
+                        state.udc_name.push_str(fname.as_str());
+                        break;
                     }
                 }
             }
         }
 
         return state;
+    }
+
+    pub fn configfs_path<'a>(&'a mut self, configfs_path: PathBuf) -> &'a mut UsbGadgetState {
+        self.configfs_path = configfs_path;
+        self
+    }
+
+    pub fn udc_name<'a>(&'a mut self, udc_name: String) -> &'a mut UsbGadgetState {
+        self.udc_name = udc_name.clone();
+        self
     }
 
     pub fn enable(&mut self, gadget: UsbGadget) -> Result<bool, String> {

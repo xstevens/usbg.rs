@@ -1,6 +1,6 @@
 extern crate usbg;
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::fs;
 
 use usbg::UsbGadget;
@@ -54,9 +54,12 @@ fn main() {
     g1.configs.push(c1);
 
     // normally this would be done already via mount but we're just testing here
-    fs::create_dir_all(Path::new("/tmp/configfs/usb_gadget"));
+    let tmp_configfs = PathBuf::from("/tmp/configfs/usb_gadget");
+    fs::create_dir_all(tmp_configfs.as_path());
 
-    let mut usb_state = UsbGadgetState::new(Some("/tmp/configfs/usb_gadget".to_owned()), None);
+    let mut usb_state = UsbGadgetState::new();
+    usb_state.udc_name("someudc.hg0".to_owned());
+    usb_state.configfs_path(tmp_configfs);
     match usb_state.enable(g1) {
         Ok(_) => println!("Enabled"),
         Err(e) => println!("Failed: {}", e),
