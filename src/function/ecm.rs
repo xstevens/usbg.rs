@@ -9,15 +9,25 @@ use UsbGadgetFunction;
 use util::write_data;
 
 #[derive(Clone)]
-pub struct ECMFunction {
-    pub instance_name: String,
-    pub dev_addr: String,
-    pub host_addr: String,
+pub struct ECMFunction<'a> {
+    pub instance_name: &'a str,
+    pub dev_addr: &'a str,
+    pub host_addr: &'a str,
 }
 
-impl UsbGadgetFunction for ECMFunction {
+impl<'a> ECMFunction<'a> {
+    fn new(instance_name: &'a str, dev_addr: &'a str, host_addr: &'a str) -> ECMFunction<'a> {
+        ECMFunction {
+            instance_name: instance_name,
+            dev_addr: dev_addr,
+            host_addr: host_addr,
+        }
+    }
+}
+
+impl<'a> UsbGadgetFunction for ECMFunction<'a> {
     fn instance_name(&self) -> &str {
-        return self.instance_name.as_str();
+        return self.instance_name;
     }
 
     fn function_type(&self) -> &str {

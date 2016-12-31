@@ -22,7 +22,7 @@ pub struct UsbGadget<'a> {
     // functions
     pub functions: Vec<Box<UsbGadgetFunction>>,
     // configurations
-    pub configs: Vec<UsbGadgetConfig>,
+    pub configs: Vec<UsbGadgetConfig<'a>>,
 }
 
 impl<'a> UsbGadget<'a> {

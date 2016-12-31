@@ -11,4 +11,3 @@ pub trait UsbGadgetFunction {
     fn attributes(&self) -> HashMap<&str, Vec<u8>>;
     fn write_to(&self, base_path: &Path) -> io::Result<()>;
 }
-    
