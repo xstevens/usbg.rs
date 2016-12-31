@@ -23,9 +23,10 @@ pub static HID_KEYBOARD_REPORT_DESC: [u8; 63] =
      0x75, 0x01, 0x05, 0x08, 0x19, 0x01, 0x29, 0x05, 0x91, 0x02, 0x95, 0x01, 0x75, 0x03, 0x91,
      0x03, 0x95, 0x06, 0x75, 0x08, 0x15, 0x00, 0x25, 0x65, 0x05, 0x07, 0x19, 0x00, 0x29, 0x65,
      0x81, 0x00, 0xC0];
+
 #[derive(Clone)]
 pub struct HIDFunction<'a> {
-    pub instance_name: String,
+    pub instance_name: &'a str,
     pub protocol: u8,
     pub subclass: u8,
     pub report_length: u32,
@@ -33,14 +34,14 @@ pub struct HIDFunction<'a> {
 }
 
 impl<'a> HIDFunction<'a> {
-    pub fn new(instance_name: &str,
+    pub fn new(instance_name: &'a str,
                protocol: u8,
                subclass: u8,
                report_length: u32,
                report_desc: &'a [u8])
                -> HIDFunction<'a> {
         HIDFunction {
-            instance_name: String::from(instance_name),
+            instance_name: instance_name,
             protocol: protocol,
             subclass: subclass,
             report_length: report_length,
@@ -51,7 +52,7 @@ impl<'a> HIDFunction<'a> {
 
 impl<'a> UsbGadgetFunction for HIDFunction<'a> {
     fn instance_name(&self) -> &str {
-        return self.instance_name.as_str();
+        return self.instance_name;
     }
 
     fn function_type(&self) -> &str {

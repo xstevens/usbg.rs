@@ -1,6 +1,6 @@
 extern crate usbg;
 
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::fs;
 
 use usbg::UsbGadget;
@@ -24,15 +24,15 @@ fn main() {
 
     // add ECM ethernet
     let ecm_function = Box::new(ecm::ECMFunction {
-        instance_name: "usb0".to_owned(),
-        dev_addr: "1a:55:89:a2:69:41".to_owned(),
-        host_addr: "1a:55:89:a2:69:42".to_owned(),
+        instance_name: "usb0",
+        dev_addr: "1a:55:89:a2:69:41",
+        host_addr: "1a:55:89:a2:69:42",
     });
     g1.functions.push(ecm_function.clone());
 
     // add HID keyboard
     let hid_function = Box::new(hid::HIDFunction {
-        instance_name: "usb0".to_owned(),
+        instance_name: "usb0",
         protocol: hid::HID_PROTOCOL_KEYBOARD,
         subclass: hid::HID_SUBCLASS_BOOT,
         report_length: 8,
@@ -44,22 +44,23 @@ fn main() {
     let mut c1_functions: Vec<Box<UsbGadgetFunction>> = Vec::new();
     c1_functions.push(hid_function.clone());
     c1_functions.push(ecm_function.clone());
+
     let c1 = UsbGadgetConfig {
         id: 1,
-        name: "c".to_owned(),
-        description: "USB Armory ECM + HID".to_owned(),
+        name: "c",
+        description: "USB Armory ECM + HID",
         max_power: Some(120),
         functions: c1_functions,
     };
     g1.configs.push(c1);
 
     // normally this would be done already via mount but we're just testing here
-    let tmp_configfs = PathBuf::from("/tmp/configfs/usb_gadget");
-    fs::create_dir_all(tmp_configfs.as_path());
+    // let tmp_configfs = PathBuf::from("/tmp/configfs/usb_gadget");
+    // let _ = fs::create_dir_all(tmp_configfs.as_path());
 
     let mut usb_state = UsbGadgetState::new();
-    usb_state.udc_name("someudc.hg0".to_owned());
-    usb_state.configfs_path(tmp_configfs);
+    // usb_state.udc_name("someudc.hg0".to_owned());
+    // usb_state.configfs_path(tmp_configfs);
     match usb_state.enable(g1) {
         Ok(_) => println!("Enabled"),
         Err(e) => println!("Failed: {}", e),
