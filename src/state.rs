@@ -6,16 +6,12 @@ use std::os::unix;
 use UsbGadget;
 use UsbGadgetFunction;
 use UsbGadgetConfig;
+use util::write_data;
+use util::create_dir_if_not_exists;
 
 pub struct UsbGadgetState {
     configfs_path: PathBuf,
     udc_name: String,
-}
-
-fn write_data(output_path: &Path, data: &[u8]) -> io::Result<()> {
-    let mut f = try!(fs::File::create(output_path));
-    try!(f.write_all(data));
-    return Ok(());
 }
 
 impl UsbGadgetState {
@@ -46,107 +42,78 @@ impl UsbGadgetState {
         self
     }
 
-    pub fn udc_name<'a>(&'a mut self, udc_name: String) -> &'a mut UsbGadgetState {
-        self.udc_name = udc_name.clone();
+    pub fn udc_name<'a>(&'a mut self, udc_name: &str) -> &'a mut UsbGadgetState {
+        self.udc_name = String::from(udc_name);
         self
     }
 
-    pub fn enable(&mut self, gadget: UsbGadget) -> Result<bool, String> {
+    pub fn enable(&mut self, gadget: UsbGadget) -> io::Result<()> {
         if !self.configfs_path.exists() {
-            return Err("ConfigFs base path does not exist".to_owned());
+            return Err(io::Error::new(io::ErrorKind::Other, "ConfigFs path does not exist"));
         }
 
         let gadget_path = self.configfs_path.join(gadget.name);
-        if !gadget_path.exists() {
-            try!(fs::create_dir(&gadget_path).map_err(|e| e.to_string()));
-        }
+        try!(create_dir_if_not_exists(&gadget_path));
 
         // vendor and product id
         try!(write_data(gadget_path.join("idVendor").as_path(),
-                        format!("0x{:04x}", gadget.vendor_id).as_bytes())
-                 .map_err(|e| e.to_string()));
+                        format!("0x{:04x}", gadget.vendor_id).as_bytes()));
         try!(write_data(gadget_path.join("idProduct").as_path(),
-                        format!("0x{:04x}", gadget.product_id).as_bytes())
-                 .map_err(|e| e.to_string()));
+                        format!("0x{:04x}", gadget.product_id).as_bytes()));
 
         // bcdDevice and bcdUSB
         if let Some(bcd_device) = gadget.bcd_device {
             try!(write_data(gadget_path.join("bcdDevice").as_path(),
-                            format!("0x{:04x}", bcd_device).as_bytes())
-                     .map_err(|e| e.to_string()));
+                            format!("0x{:04x}", bcd_device).as_bytes()));
         }
         if let Some(bcd_usb) = gadget.bcd_usb {
             try!(write_data(gadget_path.join("bcdUSB").as_path(),
-                            format!("0x{:04x}", bcd_usb).as_bytes())
-                     .map_err(|e| e.to_string()));
+                            format!("0x{:04x}", bcd_usb).as_bytes()));
         }
 
         // string attributes
         let lang = format!("0x{:04x}", &gadget.lang);
         let strings_path = gadget_path.join("strings").join(&lang);
-        if !strings_path.exists() {
-            try!(fs::create_dir_all(&strings_path).map_err(|e| e.to_string()));
-        }
+        try!(create_dir_if_not_exists(&strings_path));
         try!(write_data(strings_path.join("serialnumber").as_path(),
-                        gadget.serial_number.as_bytes())
-                 .map_err(|e| e.to_string()));
+                        gadget.serial_number.as_bytes()));
         try!(write_data(strings_path.join("manufacturer").as_path(),
-                        gadget.manufacturer.as_bytes())
-                 .map_err(|e| e.to_string()));
+                        gadget.manufacturer.as_bytes()));
         try!(write_data(strings_path.join("product").as_path(),
-                        gadget.product.as_bytes())
-                 .map_err(|e| e.to_string()));
+                        gadget.product.as_bytes()));
 
         // functions
         let functions_path = gadget_path.join("functions");
-        if !functions_path.exists() {
-            try!(fs::create_dir(&functions_path).map_err(|e| e.to_string()));
-        }
+        try!(create_dir_if_not_exists(&functions_path));
         for func in &gadget.functions {
-            try!(self.write_function(functions_path.as_path(), func).map_err(|e| e.to_string()));
+            try!(self.write_function(functions_path.as_path(), func));
             // try!(func.write_to(functions_path.as_path()).map_err(|e| e.to_string()));
         }
 
         // configs
         let configs_path = gadget_path.join("configs");
-        if !configs_path.exists() {
-            try!(fs::create_dir(&configs_path).map_err(|e| e.to_string()));
-        }
+        try!(create_dir_if_not_exists(&configs_path));
         for config in &gadget.configs {
             try!(self.write_config(configs_path.as_path(),
                                    config,
                                    functions_path.as_path(),
-                                   lang.as_str())
-                     .map_err(|e| e.to_string()));
+                                   lang.as_str()));
         }
 
         // write UDC to enable
-        // TODO: This commented section seems not possible at the moment with the compiler
-        // getting overly aggressive with borrow checking.
-        // https://github.com/rust-lang/rfcs/issues/811
-        // try!(write_data(gadget_path.join("UDC"), self.udc_name.as_bytes())
-        //          .map_err(|e| e.to_string()));
-        // duplicating write_data logic here to move on
-        let mut f = try!(fs::File::create(gadget_path.join("UDC")).map_err(|e| e.to_string()));
-        try!(f.write_all(self.udc_name.as_bytes()).map_err(|e| e.to_string()));
+        try!(write_data(gadget_path.join("UDC").as_path(), self.udc_name.as_bytes()));
 
-        return Ok(true);
+        Ok(())
     }
 
-    pub fn disable(&mut self, gadget: UsbGadget) -> Result<bool, String> {
+    pub fn disable(&mut self, gadget: UsbGadget) -> io::Result<()> {
         if !self.configfs_path.exists() {
-            return Err("ConfigFs base path does not exist".to_owned());
+            return Err(io::Error::new(io::ErrorKind::Other, "ConfigFs path does not exist"));
         }
 
         // TODO: Implement a safe tear down
 
-        return Ok(true);
-    }
-
-    fn write_data(&mut self, output_path: &Path, data: &[u8]) -> io::Result<()> {
-        let mut f = try!(fs::File::create(output_path));
-        try!(f.write_all(data));
-        return Ok(());
+        Ok(())
     }
 
     fn write_function(&mut self,
@@ -165,7 +132,7 @@ impl UsbGadgetState {
             try!(write_data(function_path.join(attr).as_path(), attr_val));
         }
 
-        return Ok(());
+        Ok(())
     }
 
     fn write_config(&mut self,
@@ -204,6 +171,6 @@ impl UsbGadgetState {
             }
         }
 
-        return Ok(());
+        Ok(())
     }
 }
