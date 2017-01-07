@@ -54,13 +54,14 @@ fn main() {
     };
     g1.configs.push(c1);
 
-    // normally this would be done already via mount but we're just testing here
+    let mut usb_state = UsbGadgetState::new();
+    // usb_state.udc_name("someudc.hg0");
+
+    // if you want test against a temp directory you can uncomment this
     // let tmp_configfs = PathBuf::from("/tmp/configfs/usb_gadget");
     // let _ = fs::create_dir_all(tmp_configfs.as_path());
-
-    let mut usb_state = UsbGadgetState::new();
-    // usb_state.udc_name("someudc.hg0".to_owned());
     // usb_state.configfs_path(tmp_configfs);
+
     match usb_state.enable(g1) {
         Ok(_) => println!("Enabled"),
         Err(e) => println!("Failed: {}", e),
