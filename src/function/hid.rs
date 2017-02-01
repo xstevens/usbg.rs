@@ -1,6 +1,5 @@
 extern crate std;
 
-use std::collections::HashMap;
 use std::fs;
 use std::io;
 use std::path::Path;
@@ -59,23 +58,11 @@ impl<'a> UsbGadgetFunction for HIDFunction<'a> {
         return "hid";
     }
 
-    fn attributes(&self) -> HashMap<&str, Vec<u8>> {
-        let mut attrs: HashMap<&str, Vec<u8>> = HashMap::new();
-
-        attrs.insert("protocol", format!("{}", self.protocol).as_bytes().to_vec());
-        attrs.insert("subclass", format!("{}", self.subclass).as_bytes().to_vec());
-        attrs.insert("report_length",
-                     format!("{}", self.report_length).as_bytes().to_vec());
-        attrs.insert("report_desc", self.report_desc.to_vec());
-
-        return attrs;
-    }
-
-    fn write_to(&self, base_path: &Path) -> io::Result<()> {
+    fn write_to(&self, functions_path: &Path) -> io::Result<()> {
         let fname = format!("{func_type}.{instance}",
                             func_type = self.function_type(),
                             instance = self.instance_name());
-        let function_path = base_path.join(fname);
+        let function_path = functions_path.join(fname);
         try!(fs::create_dir(&function_path));
         // function attributes
         try!(write_data(function_path.join("protocol").as_path(),
