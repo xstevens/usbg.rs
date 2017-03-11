@@ -1,5 +1,6 @@
 pub mod hid;
 pub mod ecm;
+pub mod rndis;
 
 use std::io;
 use std::path::Path;
