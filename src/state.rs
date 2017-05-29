@@ -50,10 +50,10 @@ impl UsbGadgetState {
 
         // write gadget to ConfigFs
         let gadget_path = self.configfs_path.join(gadget.name);
-        try!(gadget.write_to(&gadget_path));
+        gadget.write_to(&gadget_path)?;
 
         // write UDC to enable
-        try!(write_data(gadget_path.join("UDC").as_path(), self.udc_name.as_bytes()));
+        write_data(gadget_path.join("UDC").as_path(), self.udc_name.as_bytes())?;
 
         Ok(())
     }

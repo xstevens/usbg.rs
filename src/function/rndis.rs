@@ -38,12 +38,12 @@ impl<'a> UsbGadgetFunction for RNDISFunction<'a> {
                             func_type = self.function_type(),
                             instance = self.instance_name());
         let function_path = functions_path.join(fname);
-        try!(fs::create_dir(&function_path));
+        fs::create_dir(&function_path)?;
         // function attributes
-        try!(write_data(function_path.join("dev_addr").as_path(),
-                        format!("{}", self.dev_addr).as_bytes()));
-        try!(write_data(function_path.join("host_addr").as_path(),
-                        format!("{}", self.host_addr).as_bytes()));
+        write_data(function_path.join("dev_addr").as_path(),
+                   format!("{}", self.dev_addr).as_bytes())?;
+        write_data(function_path.join("host_addr").as_path(),
+                   format!("{}", self.host_addr).as_bytes())?;
 
         return Ok(());
     }
