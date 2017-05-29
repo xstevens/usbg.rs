@@ -24,20 +24,20 @@ fn main() {
 
     // add ECM ethernet
     let ecm_function = Box::new(ecm::ECMFunction {
-        instance_name: "usb0",
-        dev_addr: "1a:55:89:a2:69:41",
-        host_addr: "1a:55:89:a2:69:42",
-    });
+                                    instance_name: "usb0",
+                                    dev_addr: "1a:55:89:a2:69:41",
+                                    host_addr: "1a:55:89:a2:69:42",
+                                });
     g1.functions.push(ecm_function.clone());
 
     // add HID keyboard
     let hid_function = Box::new(hid::HIDFunction {
-        instance_name: "usb0",
-        protocol: hid::HID_PROTOCOL_KEYBOARD,
-        subclass: hid::HID_SUBCLASS_BOOT,
-        report_length: 8,
-        report_desc: &hid::HID_KEYBOARD_REPORT_DESC,
-    });
+                                    instance_name: "usb0",
+                                    protocol: hid::HID_PROTOCOL_KEYBOARD,
+                                    subclass: hid::HID_SUBCLASS_BOOT,
+                                    report_length: 8,
+                                    report_desc: &hid::HID_KEYBOARD_REPORT_DESC,
+                                });
     g1.functions.push(hid_function.clone());
 
     // add configuration

@@ -63,16 +63,16 @@ impl<'a> UsbGadgetFunction for HIDFunction<'a> {
                             func_type = self.function_type(),
                             instance = self.instance_name());
         let function_path = functions_path.join(fname);
-        try!(fs::create_dir(&function_path));
+        fs::create_dir(&function_path)?;
         // function attributes
-        try!(write_data(function_path.join("protocol").as_path(),
-                        format!("{}", self.protocol).as_bytes()));
-        try!(write_data(function_path.join("subclass").as_path(),
-                        format!("{}", self.subclass).as_bytes()));
-        try!(write_data(function_path.join("report_length").as_path(),
-                        format!("{}", self.report_length).as_bytes()));
-        try!(write_data(function_path.join("report_desc").as_path(),
-                        self.report_desc));
+        write_data(function_path.join("protocol").as_path(),
+                   format!("{}", self.protocol).as_bytes())?;
+        write_data(function_path.join("subclass").as_path(),
+                   format!("{}", self.subclass).as_bytes())?;
+        write_data(function_path.join("report_length").as_path(),
+                   format!("{}", self.report_length).as_bytes())?;
+        write_data(function_path.join("report_desc").as_path(),
+                   self.report_desc)?;
 
         return Ok(());
     }

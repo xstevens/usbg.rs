@@ -23,19 +23,19 @@ impl<'a> UsbGadgetConfig<'a> {
         let config_name = format!("{name}.{id}", name = self.name, id = self.id);
         let config_path = configs_path.join(config_name);
         if !config_path.exists() {
-            try!(fs::create_dir(&config_path));
+            fs::create_dir(&config_path)?;
         }
         let config_strings_path = config_path.join("strings").join(&lang);
         if !config_strings_path.exists() {
-            try!(fs::create_dir_all(&config_strings_path));
+            fs::create_dir_all(&config_strings_path)?;
         }
 
-        try!(write_data(config_strings_path.join("configuration").as_path(),
-                        self.description.as_bytes()));
+        write_data(config_strings_path.join("configuration").as_path(),
+                   self.description.as_bytes())?;
 
         if let Some(max_power) = self.max_power {
-            try!(write_data(config_path.join("MaxPower").as_path(),
-                            format!("{}", max_power).as_bytes()));
+            write_data(config_path.join("MaxPower").as_path(),
+                       format!("{}", max_power).as_bytes())?;
         }
 
         // symlink config functions
@@ -46,7 +46,7 @@ impl<'a> UsbGadgetConfig<'a> {
             let src_path = functions_path.join(&fname);
             let dst_path = config_path.join(&fname);
             if !dst_path.exists() {
-                try!(unix::fs::symlink(&src_path, &dst_path));
+                unix::fs::symlink(&src_path, &dst_path)?;
             }
         }
 
