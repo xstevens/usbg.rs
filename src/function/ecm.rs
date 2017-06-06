@@ -14,16 +14,6 @@ pub struct ECMFunction<'a> {
     pub host_addr: &'a str,
 }
 
-impl<'a> ECMFunction<'a> {
-    fn new(instance_name: &'a str, dev_addr: &'a str, host_addr: &'a str) -> ECMFunction<'a> {
-        ECMFunction {
-            instance_name: instance_name,
-            dev_addr: dev_addr,
-            host_addr: host_addr,
-        }
-    }
-}
-
 impl<'a> UsbGadgetFunction for ECMFunction<'a> {
     fn instance_name(&self) -> &str {
         return self.instance_name;
