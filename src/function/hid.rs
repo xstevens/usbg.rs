@@ -32,23 +32,6 @@ pub struct HIDFunction<'a> {
     pub report_desc: &'a [u8],
 }
 
-impl<'a> HIDFunction<'a> {
-    pub fn new(instance_name: &'a str,
-               protocol: u8,
-               subclass: u8,
-               report_length: u32,
-               report_desc: &'a [u8])
-               -> HIDFunction<'a> {
-        HIDFunction {
-            instance_name: instance_name,
-            protocol: protocol,
-            subclass: subclass,
-            report_length: report_length,
-            report_desc: report_desc,
-        }
-    }
-}
-
 impl<'a> UsbGadgetFunction for HIDFunction<'a> {
     fn instance_name(&self) -> &str {
         return self.instance_name;
