@@ -12,3 +12,9 @@ target
 
 # Mac
 .DS_Store
+
+# Vagrant Box
+.vagrant
+
+# Logs
+*.log
